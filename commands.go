@@ -23,6 +23,7 @@ type Commands struct {
 
 func (c *Commands) Register(name string, f func(*State, Command) error) {
 	c.listOfCommands[name] = f
+
 }
 
 func (c *Commands) Run(s *State, cmd Command) error {
@@ -40,10 +41,13 @@ func handlerLogin(s *State, cmd Command) error {
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("Argument is Empty!")
 	}
-	username := cmd.arguments[0]
+	username := cmd.arguments[2]
 	s.cfgp.CurrentUserName = username
+
+	s.cfgp.SetUser(username)
 
 	fmt.Printf("User %v set!", username)
 
 	return nil
+
 }

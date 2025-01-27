@@ -18,10 +18,14 @@ func main() {
 
 	state.cfgp = &cfg
 
-	var commands Commands
+	commandList := make(map[string]func(*State, Command) error)
+
+	cmds := Commands{
+		listOfCommands: commandList,
+	}
 
 	args := os.Args
-
+	fmt.Println(args[1:])
 	if len(args) <= 2 {
 		fmt.Println("Not Enough arguments!")
 	}
@@ -31,9 +35,13 @@ func main() {
 		arguments: args,
 	}
 
-	commands.Register(cmd.name, handlerLogin)
+	cmds.Register(cmd.name, handlerLogin)
+
+	cmds.Run(&state, cmd)
 
 	fmt.Println(cfg.DbURL)
+
+	fmt.Println()
 
 	cfg, err = config.Read()
 	if err != nil {

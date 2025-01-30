@@ -14,15 +14,29 @@ import (
 
 // Handlers
 func handlerLogin(s *State, cmd Command) error {
+
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("Argument is Empty!")
 	}
-	username := cmd.arguments[2]
-	s.cfgp.CurrentUserName = username
+	userName := cmd.arguments[0]
 
-	s.cfgp.SetUser(username)
+	ctx := context.Background()
 
-	fmt.Printf("User %v set!", username)
+	_, err := s.db.GetUser(ctx, userName)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			errors.New("User doesn't exist")
+			os.Exit(1)
+		} else {
+			return fmt.Errorf("another GetUser issue %v", err)
+		}
+	}
+
+	s.cfgp.CurrentUserName = userName
+
+	s.cfgp.SetUser(userName)
+
+	fmt.Printf("User %v set!", userName)
 
 	return nil
 
@@ -34,7 +48,7 @@ func handlerRegister(s *State, cmd Command) error {
 
 	// check the user is exist or not
 
-	userName := cmd.arguments[3]
+	userName := cmd.arguments[0]
 
 	_, err := s.db.GetUser(ctx, userName)
 
@@ -44,10 +58,10 @@ func handlerRegister(s *State, cmd Command) error {
 			fmt.Println("User does not exist, continue to create")
 
 		} else {
-			return fmt.Errorf("Database error", err)
+			return fmt.Errorf("database error: %v", err)
 		}
 	} else {
-		fmt.Printf("User with the name %s exist", userName)
+		fmt.Printf("User with the name %s exist, ", userName)
 		os.Exit(1)
 	}
 
@@ -64,6 +78,44 @@ func handlerRegister(s *State, cmd Command) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("User %s is created succesfully!", userName)
+
+	s.cfgp.CurrentUserName = userName
+
+	s.cfgp.SetUser(userName)
+
+	fmt.Printf("Creation time: %v, id: %v ", currentTime, uuid)
 	return nil
 
+}
+
+func handlerReset(s *State, cmd Command) error {
+	ctx := context.Background()
+
+	err := s.db.DeleteUsers(ctx)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Users list succesfully deleted!")
+	return nil
+
+}
+
+func handlerUsers(s *State, cmd Command) error {
+	ctx := context.Background()
+
+	usrList, err := s.db.GetUsers(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, usrName := range usrList {
+		if usrName == s.cfgp.CurrentUserName {
+			fmt.Printf("* %v (current)\n", usrName)
+		} else {
+			fmt.Printf("* %v\n", usrName)
+		}
+	}
+	return nil
 }

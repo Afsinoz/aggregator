@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	fmt.Println("vim-go")
 	cfg, err := config.Read()
 	if err != nil {
 		fmt.Println("Read function error:", err)
@@ -31,22 +30,28 @@ func main() {
 
 	state.db = dbQueries
 
-	args := os.Args[1:]
-	fmt.Println(args[1:])
+	args := os.Args
 	if len(args) <= 2 {
 		fmt.Println("Not Enough arguments!")
 	}
 
+	cmdName := args[1]
+	cmdArgs := args[2:]
+
 	cmds, err := cmdsRegister(args)
 
-	cmds.Run(&state, cmd[args[2]])
+	cmd := Command{
+		name:      cmdName,
+		arguments: cmdArgs,
+	}
 
-	fmt.Println(cfg.DbURL)
+	if err := cmds.Run(&state, cmd); err != nil {
+		fmt.Println(err)
+	}
 
 	cfg, err = config.Read()
 	if err != nil {
 		fmt.Println("Read function error:", err)
 	}
-	fmt.Println(cfg.CurrentUserName)
 
 }

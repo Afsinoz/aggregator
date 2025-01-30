@@ -4,9 +4,11 @@ import (
 	"fmt"
 
 	"github.com/Afsinoz/aggregator/internal/config"
+	"github.com/Afsinoz/aggregator/internal/database"
 )
 
 type State struct {
+	db   *database.Queries
 	cfgp *config.Config
 }
 
@@ -32,22 +34,6 @@ func (c *Commands) Run(s *State, cmd Command) error {
 	if err := f(s, cmd); err != nil {
 		return fmt.Errorf("Running error of", err)
 	}
-	return nil
-
-}
-
-// Handlers
-func handlerLogin(s *State, cmd Command) error {
-	if len(cmd.arguments) == 0 {
-		return fmt.Errorf("Argument is Empty!")
-	}
-	username := cmd.arguments[2]
-	s.cfgp.CurrentUserName = username
-
-	s.cfgp.SetUser(username)
-
-	fmt.Printf("User %v set!", username)
-
 	return nil
 
 }

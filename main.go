@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/Afsinoz/aggregator/internal/config"
+	"github.com/Afsinoz/aggregator/internal/database"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -18,30 +21,27 @@ func main() {
 
 	state.cfgp = &cfg
 
-	commandList := make(map[string]func(*State, Command) error)
-
-	cmds := Commands{
-		listOfCommands: commandList,
+	// Open the database
+	db, err := sql.Open("postgres", cfg.DbURL)
+	if err != nil {
+		fmt.Errorf("connecting db problem", err)
 	}
+	// Data base queries from the generated database
+	dbQueries := database.New(db)
 
-	args := os.Args
+	state.db = dbQueries
+
+	args := os.Args[1:]
 	fmt.Println(args[1:])
 	if len(args) <= 2 {
 		fmt.Println("Not Enough arguments!")
 	}
 
-	cmd := Command{
-		name:      "Login",
-		arguments: args,
-	}
+	cmds, err := cmdsRegister(args)
 
-	cmds.Register(cmd.name, handlerLogin)
-
-	cmds.Run(&state, cmd)
+	cmds.Run(&state, cmd[args[2]])
 
 	fmt.Println(cfg.DbURL)
-
-	fmt.Println()
 
 	cfg, err = config.Read()
 	if err != nil {

@@ -133,3 +133,44 @@ func handlerAgg(s *State, cmd Command) error {
 	fmt.Printf("%v/n", rssFeed)
 	return nil
 }
+
+func handlerAddFeed(s *State, cmd Command) error {
+	ctx := context.Background()
+
+	if len(cmd.arguments) < 2 {
+		fmt.Printf("Not enough argument for addfeed command")
+		os.Exit(1)
+	}
+
+	CurrentUser := s.cfgp.CurrentUserName
+
+	user, err := s.db.GetUser(ctx, CurrentUser)
+	if err != nil {
+		return err
+	}
+
+	userId := user.ID
+
+	args := cmd.arguments
+
+	feedName := args[0]
+	url := args[1]
+
+	uuid := uuid.New()
+
+	currentTime := time.Now()
+
+	_, err = s.db.CreateFeed(ctx, database.CreateFeedParams{
+		ID:        uuid,
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		Name:      feedName,
+		Url:       url,
+		UserID:    userId,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+
+}

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Afsinoz/aggregator/internal/database"
+	"github.com/Afsinoz/aggregator/internal/rss"
 	"github.com/google/uuid"
 )
 
@@ -117,5 +118,18 @@ func handlerUsers(s *State, cmd Command) error {
 			fmt.Printf("* %v\n", usrName)
 		}
 	}
+	return nil
+}
+
+func handlerAgg(s *State, cmd Command) error {
+	feedURL := "https://www.wagslane.dev/index.xml"
+	ctx := context.Background()
+
+	rssFeed, err := rss.FetchFeed(ctx, feedURL)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%v/n", rssFeed)
 	return nil
 }

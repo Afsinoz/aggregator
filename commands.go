@@ -76,6 +76,13 @@ func cmdsRegister(args []string) (Commands, error) {
 	}
 	cmds.Register(cmdReset.name, handlerReset)
 
+	cmdAgg := Command{
+		name:        "agg",
+		arguments:   args,
+		description: "Aggregating the URL",
+	}
+	cmds.Register(cmdAgg.name, handlerAgg)
+
 	cmdUsers := Command{
 		name:        "users",
 		arguments:   args,

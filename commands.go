@@ -97,5 +97,12 @@ func cmdsRegister(args []string) (Commands, error) {
 	}
 	cmds.Register(cmdAddFeed.name, handlerAddFeed)
 
+	cmdFeeds := Command{
+		name:        "feeds",
+		arguments:   args,
+		description: "Prints all the feeds of a user.",
+	}
+	cmds.Register(cmdFeeds.name, handlerFeeds)
+
 	return cmds, nil
 }

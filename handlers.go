@@ -168,6 +168,24 @@ func handlerAddFeed(s *State, cmd Command) error {
 		Url:       url,
 		UserID:    userId,
 	})
+
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.db.GetFeed(ctx, url)
+	if err != nil {
+		return err
+	}
+	feedId := feed.ID
+
+	_, err = s.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
+		ID:        uuid,
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		UserID:    userId,
+		FeedID:    feedId,
+	})
 	if err != nil {
 		return err
 	}
@@ -190,4 +208,59 @@ func handlerFeeds(s *State, cmd Command) error {
 	//}
 	return nil
 
+}
+
+func handlerFeedFollows(s *State, cmd Command) error {
+	ctx := context.Background()
+
+	currentUserName := s.cfgp.CurrentUserName
+
+	cmdArgs := cmd.arguments
+
+	url := cmdArgs[0]
+
+	// Get user first
+	user, err := s.db.GetUser(ctx, currentUserName)
+	if err != nil {
+		return err
+	}
+	userId := user.ID
+	// Get feed
+	feed, err := s.db.GetFeed(ctx, url)
+	if err != nil {
+		return err
+	}
+	feedId := feed.ID
+
+	currentTime := time.Now()
+
+	uuid := uuid.New()
+
+	_, err = s.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
+		ID:        uuid,
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		UserID:    userId,
+		FeedID:    feedId,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func handlerFollowing(s *State, cmd Command) error {
+	ctx := context.Background()
+
+	currentUserName := s.cfgp.CurrentUserName
+
+	feedFollowings, err := s.db.GetFeedFollowsForUsers(ctx, currentUserName)
+	if err != nil {
+		return err
+	}
+	for _, followings := range feedFollowings {
+		fmt.Printf("%v\n", followings.FeedName)
+	}
+
+	return nil
 }

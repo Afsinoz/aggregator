@@ -31,14 +31,14 @@ func main() {
 	state.db = dbQueries
 
 	args := os.Args
-	if len(args) <= 2 {
-		fmt.Println("Not Enough arguments!")
-	}
+
+	var cmdArgs []string
 
 	cmdName := args[1]
-	cmdArgs := args[2:]
-
-	cmds, err := cmdsRegister(args)
+	if len(args[2:]) > 0 {
+		cmdArgs = args[2:]
+	}
+	cmds, err := cmdsRegister(cmdArgs)
 
 	cmd := Command{
 		name:      cmdName,

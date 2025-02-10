@@ -104,5 +104,19 @@ func cmdsRegister(args []string) (Commands, error) {
 	}
 	cmds.Register(cmdFeeds.name, handlerFeeds)
 
+	cmdFeedFollows := Command{
+		name:        "follow",
+		arguments:   args,
+		description: "Creates a new feed from the user.",
+	}
+	cmds.Register(cmdFeedFollows.name, handlerFeedFollows)
+
+	cmdFollowing := Command{
+		name:        "following",
+		arguments:   args,
+		description: "Return all the feed follow",
+	}
+	cmds.Register(cmdFollowing.name, handlerFollowing)
+
 	return cmds, nil
 }

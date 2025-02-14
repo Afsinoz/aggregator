@@ -18,3 +18,7 @@ SELECT feeds.name AS name, feeds.url AS url, users.name AS users_name FROM feeds
 
 -- name: GetFeed :one
 SELECT id, name, url FROM feeds WHERE url=$1; 
+
+
+-- name: DeleteFeed :exec
+DELETE FROM feeds where feeds.url=$1;  

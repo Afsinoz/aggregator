@@ -43,6 +43,7 @@ func handlerLogin(s *State, cmd Command) error {
 
 }
 
+// Registering a user
 func handlerRegister(s *State, cmd Command) error {
 
 	ctx := context.Background()
@@ -91,6 +92,7 @@ func handlerRegister(s *State, cmd Command) error {
 
 }
 
+// Reset the database tables
 func handlerReset(s *State, cmd Command) error {
 	ctx := context.Background()
 
@@ -105,7 +107,7 @@ func handlerReset(s *State, cmd Command) error {
 
 func handlerUsers(s *State, cmd Command) error {
 	ctx := context.Background()
-
+	// Check the existence of the user
 	usrList, err := s.db.GetUsers(ctx)
 	if err != nil {
 		return err
@@ -134,7 +136,7 @@ func handlerAgg(s *State, cmd Command) error {
 	return nil
 }
 
-func handlerAddFeed(s *State, cmd Command) error {
+func handlerAddFeed(s *State, cmd Command, usr database.User) error {
 	ctx := context.Background()
 
 	if len(cmd.arguments) < 2 {
@@ -142,14 +144,7 @@ func handlerAddFeed(s *State, cmd Command) error {
 		os.Exit(1)
 	}
 
-	CurrentUser := s.cfgp.CurrentUserName
-
-	user, err := s.db.GetUser(ctx, CurrentUser)
-	if err != nil {
-		return err
-	}
-
-	userId := user.ID
+	userId := usr.ID
 
 	args := cmd.arguments
 
@@ -160,7 +155,7 @@ func handlerAddFeed(s *State, cmd Command) error {
 
 	currentTime := time.Now()
 
-	_, err = s.db.CreateFeed(ctx, database.CreateFeedParams{
+	_, err := s.db.CreateFeed(ctx, database.CreateFeedParams{
 		ID:        uuid,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
@@ -210,21 +205,16 @@ func handlerFeeds(s *State, cmd Command) error {
 
 }
 
-func handlerFeedFollows(s *State, cmd Command) error {
+func handlerFeedFollows(s *State, cmd Command, usr database.User) error {
 	ctx := context.Background()
-
-	currentUserName := s.cfgp.CurrentUserName
 
 	cmdArgs := cmd.arguments
 
 	url := cmdArgs[0]
 
 	// Get user first
-	user, err := s.db.GetUser(ctx, currentUserName)
-	if err != nil {
-		return err
-	}
-	userId := user.ID
+	// Check the existence/logged in status of the user
+	userId := usr.ID
 	// Get feed
 	feed, err := s.db.GetFeed(ctx, url)
 	if err != nil {
@@ -249,12 +239,10 @@ func handlerFeedFollows(s *State, cmd Command) error {
 	return nil
 }
 
-func handlerFollowing(s *State, cmd Command) error {
+func handlerFollowing(s *State, cmd Command, usr database.User) error {
 	ctx := context.Background()
 
-	currentUserName := s.cfgp.CurrentUserName
-
-	feedFollowings, err := s.db.GetFeedFollowsForUsers(ctx, currentUserName)
+	feedFollowings, err := s.db.GetFeedFollowsForUsers(ctx, usr.Name)
 	if err != nil {
 		return err
 	}
@@ -263,4 +251,18 @@ func handlerFollowing(s *State, cmd Command) error {
 	}
 
 	return nil
+}
+
+func handlerUnfollow(s *State, cmd Command, usr database.User) error {
+	ctx := context.Background()
+
+	url := cmd.arguments[0]
+
+	err := s.db.DeleteFeed(ctx, url)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }

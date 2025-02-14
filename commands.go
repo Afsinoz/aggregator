@@ -95,7 +95,7 @@ func cmdsRegister(args []string) (Commands, error) {
 		arguments:   args,
 		description: "Adding the feed to user.",
 	}
-	cmds.Register(cmdAddFeed.name, handlerAddFeed)
+	cmds.Register(cmdAddFeed.name, MiddlewareLoggedIn(handlerAddFeed))
 
 	cmdFeeds := Command{
 		name:        "feeds",
@@ -109,14 +109,22 @@ func cmdsRegister(args []string) (Commands, error) {
 		arguments:   args,
 		description: "Creates a new feed from the user.",
 	}
-	cmds.Register(cmdFeedFollows.name, handlerFeedFollows)
+	cmds.Register(cmdFeedFollows.name, MiddlewareLoggedIn(handlerFeedFollows))
 
 	cmdFollowing := Command{
 		name:        "following",
 		arguments:   args,
-		description: "Return all the feed follow",
+		description: "Return all the feed follow by the user",
 	}
-	cmds.Register(cmdFollowing.name, handlerFollowing)
+	cmds.Register(cmdFollowing.name, MiddlewareLoggedIn(handlerFollowing))
+
+	cmdUnfollow := Command{
+		name:        "unfollow",
+		arguments:   args,
+		description: "Unfollow a feed by url from a user.",
+	}
+
+	cmds.Register(cmdUnfollow.name, MiddlewareLoggedIn(handlerUnfollow))
 
 	return cmds, nil
 }

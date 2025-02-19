@@ -1,7 +1,8 @@
 -- name: MarkFeedFetched :exec
 
 UPDATE feeds 
-SET last_fetched_at = NOW(), updated_at = NOW(); 
+SET last_fetched_at = NOW(), updated_at = NOW()
+WHERE feeds.id = $1 ;
 
 -- name: GetNextFeedToFetch :one
 

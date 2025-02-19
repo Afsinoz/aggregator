@@ -7,6 +7,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const getNextFeedToFetch = `-- name: GetNextFeedToFetch :one
@@ -35,9 +37,10 @@ const markFeedFetched = `-- name: MarkFeedFetched :exec
 
 UPDATE feeds 
 SET last_fetched_at = NOW(), updated_at = NOW()
+WHERE feeds.id = $1
 `
 
-func (q *Queries) MarkFeedFetched(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, markFeedFetched)
+func (q *Queries) MarkFeedFetched(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, markFeedFetched, id)
 	return err
 }

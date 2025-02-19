@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/Afsinoz/aggregator/internal/database"
-	"github.com/Afsinoz/aggregator/internal/rss"
 	"github.com/google/uuid"
 )
 
@@ -124,15 +123,24 @@ func handlerUsers(s *State, cmd Command) error {
 }
 
 func handlerAgg(s *State, cmd Command) error {
-	feedURL := "https://www.wagslane.dev/index.xml"
-	ctx := context.Background()
-
-	rssFeed, err := rss.FetchFeed(ctx, feedURL)
-	if err != nil {
-		return err
+	args := cmd.arguments
+	if len(args) < 1 {
+		return errors.New("Not enough argument")
 	}
+	timeBetweenRequestsString := args[0]
+	timeBetweenRequests, err := time.ParseDuration(timeBetweenRequestsString)
+	if err != nil {
+		return nil
+	}
+	fmt.Printf("Collecting feeds every %v", timeBetweenRequests)
+	ticker := time.NewTicker(timeBetweenRequests)
 
-	fmt.Printf("%v/n", rssFeed)
+	for ; ; <-ticker.C {
+		err := scrapeFeeds(s)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

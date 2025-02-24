@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/Afsinoz/aggregator/internal/config"
 	"github.com/Afsinoz/aggregator/internal/database"
@@ -19,14 +20,16 @@ type Command struct {
 }
 
 type Commands struct {
-	listOfCommands map[string]func(*State, Command) error
+	listOfCommandsNamesDescriptions map[string]string
+	listOfCommands                  map[string]func(*State, Command) error
 }
 
 // Commands methods
 
-func (c *Commands) Register(name string, f func(*State, Command) error) {
-	c.listOfCommands[name] = f
-
+func (c *Commands) Register(cmd Command, f func(*State, Command) error) {
+	c.listOfCommands[cmd.name] = f
+	s := fmt.Sprintf("%v: %v", cmd.name, cmd.description)
+	c.listOfCommandsNamesDescriptions[cmd.name] = s
 }
 
 func (c *Commands) Run(s *State, cmd Command) error {
@@ -45,10 +48,21 @@ func cmdsRegister(args []string) (Commands, error) {
 	// here is the kind a the manual entry of the possible command
 	commandList := make(map[string]func(*State, Command) error)
 
+	descList := make(map[string]string)
+
 	var cmds Commands
 
 	cmds.listOfCommands = commandList
 
+	cmds.listOfCommandsNamesDescriptions = descList
+
+	cmdHelp := Command{
+		name:        "help",
+		arguments:   args,
+		description: "List of commmands",
+	}
+
+	cmds.Register(cmdHelp, handlerHelp)
 	// register login
 
 	cmdLogin := Command{
@@ -57,7 +71,7 @@ func cmdsRegister(args []string) (Commands, error) {
 		description: "logging the user",
 	}
 
-	cmds.Register(cmdLogin.name, handlerLogin)
+	cmds.Register(cmdLogin, handlerLogin)
 
 	// register Register :D,
 	// TODO: change the name
@@ -67,56 +81,56 @@ func cmdsRegister(args []string) (Commands, error) {
 		arguments:   args,
 		description: "Registering user into the database",
 	}
-	cmds.Register(cmdRegister.name, handlerRegister)
+	cmds.Register(cmdRegister, handlerRegister)
 
 	cmdReset := Command{
 		name:        "reset",
 		arguments:   args,
 		description: "Resetting users list.",
 	}
-	cmds.Register(cmdReset.name, handlerReset)
+	cmds.Register(cmdReset, handlerReset)
 
 	cmdAgg := Command{
 		name:        "agg",
 		arguments:   args,
 		description: "Aggregating the URL",
 	}
-	cmds.Register(cmdAgg.name, handlerAgg)
+	cmds.Register(cmdAgg, handlerAgg)
 
 	cmdUsers := Command{
 		name:        "users",
 		arguments:   args,
 		description: "Printing users list",
 	}
-	cmds.Register(cmdUsers.name, handlerUsers)
+	cmds.Register(cmdUsers, handlerUsers)
 
 	cmdAddFeed := Command{
 		name:        "addfeed",
 		arguments:   args,
 		description: "Adding the feed to user.",
 	}
-	cmds.Register(cmdAddFeed.name, MiddlewareLoggedIn(handlerAddFeed))
+	cmds.Register(cmdAddFeed, MiddlewareLoggedIn(handlerAddFeed))
 
 	cmdFeeds := Command{
 		name:        "feeds",
 		arguments:   args,
 		description: "Prints all the feeds of a user.",
 	}
-	cmds.Register(cmdFeeds.name, handlerFeeds)
+	cmds.Register(cmdFeeds, handlerFeeds)
 
 	cmdFeedFollows := Command{
 		name:        "follow",
 		arguments:   args,
 		description: "Creates a new feed from the user.",
 	}
-	cmds.Register(cmdFeedFollows.name, MiddlewareLoggedIn(handlerFeedFollows))
+	cmds.Register(cmdFeedFollows, MiddlewareLoggedIn(handlerFeedFollows))
 
 	cmdFollowing := Command{
 		name:        "following",
 		arguments:   args,
 		description: "Return all the feed follow by the user",
 	}
-	cmds.Register(cmdFollowing.name, MiddlewareLoggedIn(handlerFollowing))
+	cmds.Register(cmdFollowing, MiddlewareLoggedIn(handlerFollowing))
 
 	cmdUnfollow := Command{
 		name:        "unfollow",
@@ -124,7 +138,7 @@ func cmdsRegister(args []string) (Commands, error) {
 		description: "Unfollow a feed by url from a user.",
 	}
 
-	cmds.Register(cmdUnfollow.name, MiddlewareLoggedIn(handlerUnfollow))
+	cmds.Register(cmdUnfollow, MiddlewareLoggedIn(handlerUnfollow))
 
 	return cmds, nil
 }

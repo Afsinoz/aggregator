@@ -13,6 +13,17 @@ import (
 )
 
 // Handlers
+func handlerHelp(s *State, cmd Command) error {
+	cmds, err := cmdsRegister(cmd.arguments)
+	if err != nil {
+		return err
+	}
+	for _, desc := range cmds.listOfCommandsNamesDescriptions {
+		s := desc
+		fmt.Println(s)
+	}
+	return nil
+}
 func handlerLogin(s *State, cmd Command) error {
 
 	if len(cmd.arguments) == 0 {

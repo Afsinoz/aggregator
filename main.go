@@ -37,6 +37,8 @@ func main() {
 	cmdName := args[1]
 	if len(args[2:]) > 0 {
 		cmdArgs = args[2:]
+	} else {
+		cmdArgs = append(cmdArgs, "no args")
 	}
 	cmds, err := cmdsRegister(cmdArgs)
 
